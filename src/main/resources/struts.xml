@@ -1,0 +1,210 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE struts PUBLIC
+        "-//Apache Software Foundation//DTD Struts Configuration 2.0//EN"
+        "http://struts.apache.org/dtds/struts-2.0.dtd">
+<struts>
+
+    <package name="history" namespace="/"  extends="json-default">
+        <result-types>
+            <result-type name="json" class="org.apache.struts2.json.JSONResult"/>
+        </result-types>
+        <interceptors>
+            <!-- ExceptionHandling (ExceptionMappingInterceptor) -->
+            <interceptor name="SampleExceptionInterceptor" 
+                         class="org.struts2sifat.interceptor.SampleExceptionMappingInterceptor"/>
+            <!-- LoginInterceptor (AbstractInterceptor) -->
+            <interceptor name="LoginInterceptor"
+                                     class="org.struts2sifat.interceptor.LoginInterceptor" />
+
+            <!-- LoginInterceptor ExceptionInterceptor 「defaultLoginStack」  -->
+            <interceptor-stack name="defaultLoginStack">
+
+                <!--  ExceptionMappingInterceptor  -->
+                <interceptor-ref name="SampleExceptionInterceptor">
+                    <param name="logEnabled">true</param>
+                    <param name="logCategory">sample.exception</param>
+                    <param name="logLevel">error</param>
+                </interceptor-ref>
+
+                <!-- loginInterceptor -->
+                <interceptor-ref name="LoginInterceptor">
+                    <param name="excludeMethods">login,logout</param>
+                </interceptor-ref>
+
+                <!-- defaultStack.xml interceptor  -->
+                <interceptor-ref name="alias" />
+                <interceptor-ref name="servletConfig" />
+                <interceptor-ref name="i18n" />
+                <interceptor-ref name="prepare" />
+                <interceptor-ref name="chain" />
+                <interceptor-ref name="scopedModelDriven" />
+                <interceptor-ref name="modelDriven" />
+                <interceptor-ref name="fileUpload" />
+                <interceptor-ref name="checkbox" />
+                <interceptor-ref name="multiselect"/>
+                <interceptor-ref name="staticParams" />
+                <interceptor-ref name="actionMappingParams" />
+                <interceptor-ref name="params">
+                    <param name="excludeParams">dojo\..*,^struts\..*</param>
+                </interceptor-ref>
+                <interceptor-ref name="conversionError" />
+                <interceptor-ref name="validation">
+                    <param name="excludeMethods">input,back,cancel,browse</param>
+                </interceptor-ref>
+                <interceptor-ref name="workflow">
+                    <param name="excludeMethods">input,back,cancel,browse</param>
+                </interceptor-ref>
+                <interceptor-ref name="debugging" />
+            </interceptor-stack>
+
+        </interceptors>
+
+        <!--  interceptor defaultLoginStack -->
+        <default-interceptor-ref name="defaultLoginStack" />
+
+        <global-results>
+
+            <!--  JSP -->
+            <result name="exception">/WEB-INF/jsp/error.jsp</result>
+
+            <result name="login" type="redirect">/login</result>
+            <result name="menu" type="redirect">/menu</result>
+            <result name="download" type="stream">
+                <param name="contentType">application/octet-stream</param>
+                <param name="inputName">inputStream</param>
+                <param name="contentDisposition">attachment; filename = ${fileName}</param>
+                <param name="bufferSize">4096</param>
+                <param name="contentLength">${contentLength}</param>
+            </result>
+        </global-results>
+
+        <!-- exception-mappings -->
+        <global-exception-mappings>
+            <exception-mapping exception="java.lang.Exception" result="exception"/>
+        </global-exception-mappings>
+
+        <action name="login" class="org.struts2sifat.action.LoginAction">
+            <result name="success">/WEB-INF/jsp/login.jsp</result>
+            <result name="input">/WEB-INF/jsp/login.jsp</result>
+            <result name="loginFailed">/WEB-INF/jsp/login.jsp</result>
+            <result name="login" type="redirect">menu</result>
+        </action>
+
+        <!--   -->
+        <action name="logout" class="org.struts2sifat.action.LogoutAction">
+            <result name="success" type="redirect">/login</result>
+        </action>
+
+        <action name="menu">
+            <result>/WEB-INF/jsp/menu.jsp</result>
+        </action>
+
+        <!--  Action  -->
+        <action name="sample">
+            <result>/WEB-INF/jsp/sample.jsp</result>
+        </action>
+
+        <!--  Action Sample -->
+        <action name="selectSample" class="org.struts2sifat.action.SampleAction">
+            <result name="input">/WEB-INF/jsp/sample.jsp</result>
+            <result name="success">/WEB-INF/jsp/sample.jsp</result>
+        </action>
+
+
+
+        <!--  Action  -->
+        <action name="sample2">
+            <result>/WEB-INF/jsp/sample2.jsp</result>
+        </action>
+
+        <!--  Action Sample -->
+        <action name="selectSample2" class="org.struts2sifat.action.SampleAction">
+            <result name="success" type="json">
+                <param name="root">testDataEntity</param>
+            </result>
+        </action>
+
+
+        <!--  Action  -->
+        <action name="sample3">
+            <result>/WEB-INF/jsp/sample3.jsp</result>
+        </action>
+        <!-- Action Sample -->
+        <action name="selectSample3" class="org.struts2sifat.action.SampleAction">
+            <result name="success" type="json">
+                <param name="root">inputError</param>
+            </result>
+        </action>
+
+        <!--  Action Sample -->
+        <action name="pointchange" class="org.struts2sifat.action.SampleAction">
+            <result name="success" type="redirect">/WEB-INF/jsp/sample3_result.jsp?historyId=${historyId}</result>
+        </action>
+
+
+
+        <!--  Action Sample。 (tokenInterceptor) -->
+        <action name="registSample" class="org.struts2sifat.action.SampleRegistAction">
+            <interceptor-ref name="defaultLoginStack"/>
+            <interceptor-ref name="token">
+                <param name="includeMethods">registData</param><!--  token   -->
+            </interceptor-ref>
+            <result name="invalid.token">/WEB-INF/jsp/duplicationError.jsp</result><!-- token   -->
+            <result name="init">/WEB-INF/jsp/sampleRegist.jsp</result>
+            <result name="input">/WEB-INF/jsp/sampleRegist.jsp</result>
+            <result name="success" type="redirect">/registResult!selectResultData?testDataInputEntity.person_id=${testDataInputEntity.person_id}</result>
+
+        </action>
+
+        <!--  Action Sample (tokenInterceptor) -->
+        <action name="joinregistSample" class="org.struts2sifat.action.TYGERRegistAction">
+            <interceptor-ref name="defaultLoginStack"/>
+            <interceptor-ref name="token">
+                <param name="includeMethods">registData</param><!--  token  -->
+            </interceptor-ref>
+            <result name="invalid.token">/WEB-INF/jsp/duplicationError.jsp</result><!-- token   -->
+            <result name="init">/WEB-INF/jsp/JoinsampleRegist.jsp</result>
+            <result name="input">/WEB-INF/jsp/JoinsampleRegist.jsp</result>
+            <result name="success" type="redirect">/registResult!selectResultData?testDataInputEntity.person_id=${testDataInputEntity.person_id}</result>
+        </action>
+
+        <!--  Action Sample -->
+        <action name="registResult" class="org.struts2sifat.action.TYGERRegistAction">
+            <result name="success">/WEB-INF/jsp/sampleResult.jsp</result>
+        </action>
+
+
+        <!--  Action Sample (tokenInterceptor) -->
+        <action name="updateSample" class="org.struts2sifat.action.SampleUpdateAction">
+            <interceptor-ref name="defaultLoginStack"/>
+            <interceptor-ref name="token">
+                <param name="includeMethods">updateData</param>
+            </interceptor-ref>
+            <result name="init">/WEB-INF/jsp/sampleDisp.jsp</result>
+            <result name="invalid.token">/WEB-INF/jsp/duplicationError.jsp</result>
+            <result name="search">/WEB-INF/jsp/sampleDisp.jsp</result>
+            <result name="updateDisplay">/WEB-INF/jsp/sampleUpdate.jsp</result>
+            <result name="input">/WEB-INF/jsp/sampleUpdate.jsp</result>
+            <result name="success">/WEB-INF/jsp/sampleResult.jsp</result>
+            <result name="delete">/WEB-INF/jsp/sampleDeletedResult.jsp</result>
+        </action>
+
+        <!-- Action  -->
+        <action name="sampleStatiscs">
+            <result>/WEB-INF/jsp/sampleStatistics.jsp</result>
+        </action>
+
+        <!-- bootstrap tab Sample -->
+        <action name="sampleTab">
+            <result>/WEB-INF/jsp/sampleTab.jsp</result>
+        </action>
+
+
+    </package>
+
+    <!--   ResourceBundle.getBundle("MessageResources"); -->
+    <constant name="MessageResources" value="MessageResources"/>
+
+    <constant name="struts.ui.theme" value="simple" />
+    <constant name="struts.configuration.xml.reload" value="true" />
+</struts>
